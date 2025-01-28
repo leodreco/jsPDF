@@ -12295,7 +12295,8 @@ var AcroForm = jsPDF.AcroForm;
           this.getPageHeight()
         ) {
           this.cellAddPage();
-          currentCell.y = margins.top;
+          // currentCell.y = margins.top;
+          currentCell.y = 5;
           if (printHeaders && tableHeaderRow) {
             this.printHeaderRow(currentCell.lineNumber, true);
             currentCell.y += tableHeaderRow[0].height;
@@ -12653,7 +12654,7 @@ var AcroForm = jsPDF.AcroForm;
     for (var i = 0; i < this.internal.__cell__.tableHeaderRow.length; i += 1) {
       tableHeaderCell = this.internal.__cell__.tableHeaderRow[i].clone();
       if (new_page) {
-        tableHeaderCell.y = this.internal.__cell__.margins.top || 0;
+        tableHeaderCell.y = this.internal.__cell__.margins.top || 5;
         tempHeaderConf.push(tableHeaderCell);
       }
       tableHeaderCell.lineNumber = lineNumber;
