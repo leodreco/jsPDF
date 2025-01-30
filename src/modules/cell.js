@@ -130,7 +130,16 @@ import { jsPDF } from "../jspdf.js";
         _align = value;
       }
     });
-
+    var _background = arguments[7];
+    Object.defineProperty(this, "background", {
+      enumerable: true,
+      get: function() {
+        return _background;
+      },
+      set: function(value) {
+        _background = value;
+      }
+    });
     return this;
   };
 
@@ -142,7 +151,8 @@ import { jsPDF } from "../jspdf.js";
       this.height,
       this.text,
       this.lineNumber,
-      this.align
+      this.align,
+      this.background,
     );
   };
 
@@ -154,7 +164,8 @@ import { jsPDF } from "../jspdf.js";
       this.height,
       this.text,
       this.lineNumber,
-      this.align
+      this.align,
+      this.background,
     ];
   };
 
@@ -278,7 +289,8 @@ import { jsPDF } from "../jspdf.js";
         arguments[2],
         arguments[3],
         arguments[4],
-        arguments[5]
+        arguments[5],
+        arguments[6]
       );
     }
     _initialize.call(this);
@@ -300,7 +312,9 @@ import { jsPDF } from "../jspdf.js";
           this.getPageHeight()
         ) {
           this.cellAddPage();
-          currentCell.y = margins.top;
+          // TODO Cambios
+          // currentCell.y = margins.top;
+          currentCell.y = 5;
           if (printHeaders && tableHeaderRow) {
             this.printHeaderRow(currentCell.lineNumber, true);
             currentCell.y += tableHeaderRow[0].height;
@@ -312,12 +326,23 @@ import { jsPDF } from "../jspdf.js";
     }
 
     if (typeof currentCell.text[0] !== "undefined") {
+      let style = undefined;
+      if(printingHeaderRow === true){
+        style = 'FD';
+      } else {
+        if (typeof currentCell.background !== 'undefined') {
+          this.setFillColor(currentCell.background);
+          style = 'B*';
+        }
+      }
       this.rect(
         currentCell.x,
         currentCell.y,
         currentCell.width,
         currentCell.height,
-        printingHeaderRow === true ? "FD" : undefined
+        style,
+        // "B*",
+        // printingHeaderRow === true ? "FD" : undefined
       );
       if (currentCell.align === "right") {
         this.text(
@@ -375,7 +400,7 @@ import { jsPDF } from "../jspdf.js";
      * @returns {jsPDF} jsPDF-instance
      */
 
-  jsPDFAPI.table = function(x, y, data, headers, config) {
+  jsPDFAPI.table = function(x, y, data, headers, config, getCellBackground = undefined) {
     _initialize.call(this);
     if (!data) {
       throw new Error("No data for PDF table.");
@@ -512,7 +537,8 @@ import { jsPDF } from "../jspdf.js";
           rowHeight,
           row[value].text,
           undefined,
-          row[value].align
+          row[value].align,
+          // getCellBackground !== undefined ? getCellBackground(i) : undefined,
         );
       });
 
@@ -562,7 +588,8 @@ import { jsPDF } from "../jspdf.js";
             lineHeight,
             cellData,
             i + 2,
-            align[headerNames[j]]
+            align[headerNames[j]],
+            getCellBackground === undefined ? undefined : getCellBackground(i),
           )
         );
       }
@@ -658,7 +685,9 @@ import { jsPDF } from "../jspdf.js";
     for (var i = 0; i < this.internal.__cell__.tableHeaderRow.length; i += 1) {
       tableHeaderCell = this.internal.__cell__.tableHeaderRow[i].clone();
       if (new_page) {
-        tableHeaderCell.y = this.internal.__cell__.margins.top || 0;
+        // TODO Cambios
+        // tableHeaderCell.y = this.internal.__cell__.margins.top || 10;
+        tableHeaderCell.y = this.internal.__cell__.margins.top || 5;
         tempHeaderConf.push(tableHeaderCell);
       }
       tableHeaderCell.lineNumber = lineNumber;

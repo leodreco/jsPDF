@@ -1,7 +1,7 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 2.5.2 Built on 2024-09-17T13:29:57.860Z
+ * Version 2.5.2 Built on 2025-01-30T15:20:45.923Z
  *                      CommitID 00000000
  *
  * Copyright (c) 2010-2021 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
@@ -12125,7 +12125,16 @@ var AcroForm = jsPDF.AcroForm;
         _align = value;
       }
     });
-
+    var _background = arguments[7];
+    Object.defineProperty(this, "background", {
+      enumerable: true,
+      get: function() {
+        return _background;
+      },
+      set: function(value) {
+        _background = value;
+      }
+    });
     return this;
   };
 
@@ -12137,7 +12146,8 @@ var AcroForm = jsPDF.AcroForm;
       this.height,
       this.text,
       this.lineNumber,
-      this.align
+      this.align,
+      this.background,
     );
   };
 
@@ -12149,7 +12159,8 @@ var AcroForm = jsPDF.AcroForm;
       this.height,
       this.text,
       this.lineNumber,
-      this.align
+      this.align,
+      this.background,
     ];
   };
 
@@ -12273,7 +12284,8 @@ var AcroForm = jsPDF.AcroForm;
         arguments[2],
         arguments[3],
         arguments[4],
-        arguments[5]
+        arguments[5],
+        arguments[6]
       );
     }
     _initialize.call(this);
@@ -12295,6 +12307,7 @@ var AcroForm = jsPDF.AcroForm;
           this.getPageHeight()
         ) {
           this.cellAddPage();
+          // TODO Cambios
           // currentCell.y = margins.top;
           currentCell.y = 5;
           if (printHeaders && tableHeaderRow) {
@@ -12308,12 +12321,23 @@ var AcroForm = jsPDF.AcroForm;
     }
 
     if (typeof currentCell.text[0] !== "undefined") {
+      let style = undefined;
+      if(printingHeaderRow === true){
+        style = 'FD';
+      } else {
+        if (typeof currentCell.background !== 'undefined') {
+          this.setFillColor(currentCell.background);
+          style = 'B*';
+        }
+      }
       this.rect(
         currentCell.x,
         currentCell.y,
         currentCell.width,
         currentCell.height,
-        printingHeaderRow === true ? "FD" : undefined
+        style,
+        // "B*",
+        // printingHeaderRow === true ? "FD" : undefined
       );
       if (currentCell.align === "right") {
         this.text(
@@ -12371,7 +12395,7 @@ var AcroForm = jsPDF.AcroForm;
      * @returns {jsPDF} jsPDF-instance
      */
 
-  jsPDFAPI.table = function(x, y, data, headers, config) {
+  jsPDFAPI.table = function(x, y, data, headers, config, getCellBackground = undefined) {
     _initialize.call(this);
     if (!data) {
       throw new Error("No data for PDF table.");
@@ -12508,7 +12532,8 @@ var AcroForm = jsPDF.AcroForm;
           rowHeight,
           row[value].text,
           undefined,
-          row[value].align
+          row[value].align,
+          // getCellBackground !== undefined ? getCellBackground(i) : undefined,
         );
       });
 
@@ -12558,7 +12583,8 @@ var AcroForm = jsPDF.AcroForm;
             lineHeight,
             cellData,
             i + 2,
-            align[headerNames[j]]
+            align[headerNames[j]],
+            getCellBackground === undefined ? undefined : getCellBackground(i),
           )
         );
       }
@@ -12654,6 +12680,8 @@ var AcroForm = jsPDF.AcroForm;
     for (var i = 0; i < this.internal.__cell__.tableHeaderRow.length; i += 1) {
       tableHeaderCell = this.internal.__cell__.tableHeaderRow[i].clone();
       if (new_page) {
+        // TODO Cambios
+        // tableHeaderCell.y = this.internal.__cell__.margins.top || 10;
         tableHeaderCell.y = this.internal.__cell__.margins.top || 5;
         tempHeaderConf.push(tableHeaderCell);
       }

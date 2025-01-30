@@ -1073,7 +1073,8 @@ declare module "jspdf" {
       y: number,
       data: { [key: string]: string }[],
       headers: string[] | CellConfig[],
-      config: TableConfig
+      config: TableConfig,
+      getCellBackground?: (index: number) => string
     ): jsPDF;
     calculateLineHeight(
       headerNames: string[],

@@ -1,7 +1,7 @@
 /** @license
  *
  * jsPDF - PDF Document creation from JavaScript
- * Version 2.5.2 Built on 2024-09-17T13:29:57.856Z
+ * Version 2.5.2 Built on 2025-01-30T15:20:45.914Z
  *                      CommitID 00000000
  *
  * Copyright (c) 2010-2021 James Hall <james@parall.ax>, https://github.com/MrRio/jsPDF
@@ -11466,15 +11466,25 @@
           _align = value;
         }
       });
+      var _background = arguments[7];
+      Object.defineProperty(this, "background", {
+        enumerable: true,
+        get: function get() {
+          return _background;
+        },
+        set: function set(value) {
+          _background = value;
+        }
+      });
       return this;
     };
 
     Cell.prototype.clone = function () {
-      return new Cell(this.x, this.y, this.width, this.height, this.text, this.lineNumber, this.align);
+      return new Cell(this.x, this.y, this.width, this.height, this.text, this.lineNumber, this.align, this.background);
     };
 
     Cell.prototype.toArray = function () {
-      return [this.x, this.y, this.width, this.height, this.text, this.lineNumber, this.align];
+      return [this.x, this.y, this.width, this.height, this.text, this.lineNumber, this.align, this.background];
     };
     /**
      * @name setHeaderFunction
@@ -11589,7 +11599,7 @@
       if (arguments[0] instanceof Cell) {
         currentCell = arguments[0];
       } else {
-        currentCell = new Cell(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5]);
+        currentCell = new Cell(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5], arguments[6]);
       }
 
       _initialize.call(this);
@@ -11608,8 +11618,10 @@
         } else {
           //New line
           if (lastCell.y + lastCell.height + currentCell.height + margins.bottom > this.getPageHeight()) {
-            this.cellAddPage();
-            currentCell.y = margins.top;
+            this.cellAddPage(); // TODO Cambios
+            // currentCell.y = margins.top;
+
+            currentCell.y = 5;
 
             if (printHeaders && tableHeaderRow) {
               this.printHeaderRow(currentCell.lineNumber, true);
@@ -11622,7 +11634,20 @@
       }
 
       if (typeof currentCell.text[0] !== "undefined") {
-        this.rect(currentCell.x, currentCell.y, currentCell.width, currentCell.height, printingHeaderRow === true ? "FD" : undefined);
+        var style = undefined;
+
+        if (printingHeaderRow === true) {
+          style = 'FD';
+        } else {
+          if (typeof currentCell.background !== 'undefined') {
+            this.setFillColor(currentCell.background);
+            style = 'B*';
+          }
+        }
+
+        this.rect(currentCell.x, currentCell.y, currentCell.width, currentCell.height, style // "B*",
+        // printingHeaderRow === true ? "FD" : undefined
+        );
 
         if (currentCell.align === "right") {
           this.text(currentCell.text, currentCell.x + currentCell.width - padding, currentCell.y + padding, {
@@ -11669,6 +11694,8 @@
 
 
     jsPDFAPI.table = function (x, y, data, headers, config) {
+      var getCellBackground = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : undefined;
+
       _initialize.call(this);
 
       if (!data) {
@@ -11817,7 +11844,7 @@
             }, this);
           }
 
-          cell.call(this, new Cell(x, y, columnWidths[headerNames[j]], lineHeight, cellData, i + 2, align[headerNames[j]]));
+          cell.call(this, new Cell(x, y, columnWidths[headerNames[j]], lineHeight, cellData, i + 2, align[headerNames[j]], getCellBackground === undefined ? undefined : getCellBackground(i)));
         }
       }
 
@@ -11899,7 +11926,9 @@
         tableHeaderCell = this.internal.__cell__.tableHeaderRow[i].clone();
 
         if (new_page) {
-          tableHeaderCell.y = this.internal.__cell__.margins.top || 0;
+          // TODO Cambios
+          // tableHeaderCell.y = this.internal.__cell__.margins.top || 10;
+          tableHeaderCell.y = this.internal.__cell__.margins.top || 5;
           tempHeaderConf.push(tableHeaderCell);
         }
 
